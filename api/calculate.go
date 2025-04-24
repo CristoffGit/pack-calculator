@@ -1,7 +1,7 @@
-package handler
+// api/calculate.go
+package handler   // ✔ any name works as long as Handler is exported
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -11,40 +11,54 @@ import (
 	"github.com/CristoffGit/pack-calculator/internal/calc"
 )
 
-type Req struct{ Items int `json:"items"` }
-type Resp struct{ Result map[int]int `json:"result"` }
+/* ---------- request / response DTOs ---------- */
 
-func loadPacks() []int {
+type request struct {
+	Items int `json:"items"`
+}
+type response struct {
+	Result map[int]int `json:"result"`
+}
+
+/* ---------- runtime config ---------- */
+
+func loadPackSizes() []int {
 	if env := os.Getenv("PACK_SIZES"); env != "" {
+		// env var format: "250,500,1000,2000,5000"
 		parts := strings.Split(env, ",")
 		out := make([]int, 0, len(parts))
 		for _, p := range parts {
-			if n, _ := strconv.Atoi(strings.TrimSpace(p)); n > 0 {
+			if n, err := strconv.Atoi(strings.TrimSpace(p)); err == nil && n > 0 {
 				out = append(out, n)
 			}
 		}
 		return out
 	}
-	// fallback compile-time default
-	return []int{250, 500, 1000, 2000, 5000}
+	return []int{250, 500, 1000, 2000, 5000} // fallback default
 }
 
-// Vercel → exported function signature
-func Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+/* ---------- Vercel entry-point ---------- */
+
+// Handler is automatically detected by Vercel's Go runtime.
+func Handler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "POST only", http.StatusMethodNotAllowed)
+		w.Header().Set("Allow", "POST")
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	var q Req
-	if err := json.NewDecoder(r.Body).Decode(&q); err != nil {
+
+	var req request
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "bad json", http.StatusBadRequest)
 		return
 	}
-	out, err := calc.Calculate(q.Items, loadPacks())
+
+	result, err := calc.Calculate(req.Items, loadPackSizes())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(Resp{Result: out})
+	json.NewEncoder(w).Encode(response{Result: result})
 }
