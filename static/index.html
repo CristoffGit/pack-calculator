@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Order Packs Calculator</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <main class="container">
+      <h1>Order Packs Calculator</h1>
+
+      <!-- SECTION 1 – Edit pack sizes -->
+      <section>
+        <h2>Pack Sizes</h2>
+        <div id="packList" class="pack-list"></div>
+
+        <div class="btn-row">
+          <button id="addPack" class="btn">＋ Add pack size</button>
+          <button id="savePacks" class="btn">Submit pack sizes change</button>
+        </div>
+        <p id="packMsg" class="msg"></p>
+      </section>
+
+      <hr />
+      <!-- SECTION 2 – Calculate order -->
+      <section>
+        <h2>Calculate packs for order</h2>
+        <div class="flex">
+          <label for="items" class="items-label">Items:</label>
+          <input id="items" type="number" min="1" required />
+          <button id="calcBtn" class="btn">Calculate</button>
+        </div>
+        <p id="calcMsg" class="msg"></p>
+
+        <table id="resultTbl" class="result-table hidden" aria-live="polite">
+          <thead>
+            <tr><th>Pack</th><th>Quantity</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

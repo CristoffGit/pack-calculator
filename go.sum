@@ -1,0 +1,6 @@
+# from the repo root
+PS> type NUL > go.sum   # Windows
+# or
+$ touch go.sum          # macOS / Linux / Git-Bash
+
+PS> docker compose up --build
